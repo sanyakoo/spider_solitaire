@@ -40,12 +40,12 @@ public class Spider extends Application {
         controller.setApp(this);
 
         primaryStage.setTitle("Spider");
-        primaryStage.setScene(new Scene(root, 1449, 550));
+        primaryStage.setScene(new Scene(root, 1300, 400));
 //        try (InputStream resourceAsStream = Spider.class.getResourceAsStream("/icon.png")) {
 //            primaryStage.getIcons().add(new Image(resourceAsStream));
 //        }
 
-        primaryStage.setResizable(false);
+//        primaryStage.setResizable(false);
 
         primaryStage.show();
         primaryStage.setOnCloseRequest(t -> {

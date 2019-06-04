@@ -4,9 +4,8 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
-
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="564.0" prefWidth="954.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.spbstu.games.spider.Controller">
    <bottom>
@@ -18,23 +17,15 @@
             <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
          </padding>
          <children>
-            <Label prefHeight="17.0" prefWidth="135.0" text="time" />
+            <Label prefHeight="17.0" prefWidth="135.0" />
+            <Pane fx:id="distribPane" prefHeight="295.0" prefWidth="125.0" />
          </children>
       </VBox>
    </left>
    <center>
       <VBox prefHeight="400.0" prefWidth="100.0" BorderPane.alignment="CENTER">
          <children>
-            <HBox fx:id="resultBox" prefHeight="344.0" prefWidth="751.0" spacing="10.0" style="-fx-background-color: #fff;">
-               <padding>
-                  <Insets left="10.0" top="20.0" />
-               </padding>
-            </HBox>
-            <HBox fx:id="workBox" prefHeight="343.0" prefWidth="397.0" spacing="10.0" style="-fx-background-color: #fff;">
-               <padding>
-                  <Insets bottom="20.0" left="10.0" top="50.0" />
-               </padding>
-            </HBox>
+            <Pane fx:id="resultBox" prefHeight="657.0" prefWidth="769.0" />
          </children>
       </VBox>
    </center>

@@ -19,6 +19,8 @@ public class Card {
     private Rank rank;
     private Suit suit;
 
+    private boolean back;
+
     private int cardWidth = 950 / 13;
     private int cardHeight = 98;
 

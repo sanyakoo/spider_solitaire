@@ -6,6 +6,7 @@
     -fx-padding: 20px;
     -fx-margin: 20px;
 
+-fx-fill: #47f;
 
         -fx-hgap: 20px;
         -fx-padding: 40px;
@@ -21,4 +22,6 @@
 
 .allowed{
      -fx-background-color: #afa;
+     -fx-fill: #4F4;
+
 }
