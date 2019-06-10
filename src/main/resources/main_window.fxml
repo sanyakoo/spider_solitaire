@@ -9,15 +9,17 @@
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="564.0" prefWidth="954.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.spbstu.games.spider.Controller">
    <bottom>
-      <AnchorPane prefHeight="19.0" prefWidth="600.0" BorderPane.alignment="CENTER" />
+      <AnchorPane prefHeight="19.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label prefHeight="17.0" prefWidth="135.0" />
+         </children></AnchorPane>
    </bottom>
    <left>
       <VBox fx:id="razdachaBox" prefHeight="545.0" prefWidth="185.0" BorderPane.alignment="CENTER">
          <padding>
-            <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+            <Insets bottom="30.0" left="30.0" right="30.0" />
          </padding>
          <children>
-            <Label prefHeight="17.0" prefWidth="135.0" />
             <Pane fx:id="distribPane" prefHeight="295.0" prefWidth="125.0" />
          </children>
       </VBox>

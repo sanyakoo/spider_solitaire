@@ -4,5 +4,5 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DragHolder {
-    public static List<Card> cards = new ArrayList<>();
+    public static List<CardModel> cards = new ArrayList<>();
 }
