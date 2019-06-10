@@ -1,18 +1,19 @@
 package edu.spbstu.games.spider;
 
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Rectangle;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.Map;
 
 
 @Slf4j
@@ -27,34 +28,42 @@ public class CardStackView {
     //    public static final int CARD_WIDTH = 100;
     public static final int CARD_LEFT_MARGIN = 10;
 
-    private final Rectangle backGroundRect;
+    protected Rectangle backGroundRect;
 
     @Getter
-    private final List<CardView> cardNodes = new ArrayList<>();
+    protected final List<CardView> cardNodes = new ArrayList<>();
 
-    private CardStackModel model;
+    protected CardStackModel model;
     private DragContext dragContext;
-    private boolean distributionStack;
+    private Consumer<List<? extends Node>> onNewCardViewsCallback;
 
-    public CardStackView(CardStackModel model, DragContext dragContext, boolean distributionStack,
-                         Consumer<List<? extends Node>> cardViewsOnNewCallback) {
+    public CardStackView(CardStackModel model, DragContext dragContext, Consumer<List<? extends Node>> onNewCardViewsCallback) {
         this.model = model;
         this.dragContext = dragContext;
-        this.distributionStack = distributionStack;
+        this.onNewCardViewsCallback = onNewCardViewsCallback;
 
         backGroundRect = createStackBackground();
-        cardNodes.addAll(createCardNodes(distributionStack));
+        cardNodes.addAll(createCardNodes());
+        setXIdx(model.getIdx().get());
 
+        model.getIdx().addListener((observable, oldValue, newValue) -> {
+            log.debug("stack IDX = {}", newValue);
+            setXIdx((Integer) newValue);
+        });
+
+        init();
+    }
+
+    protected void init() {
         model.getCards().forEach(cardModel -> cardModel.getHiddenValue().addListener((observable, oldValue, newValue) -> {
             makeDraggable2(cardNodes);
         }));
 
         makeDraggable2(cardNodes);
-        getNodes().forEach(node -> {
+    /*    getNodes().forEach(node -> {
             node.setLayoutY(node.getLayoutY() + STACK_TOP_MARGIN);
-        });
+        });*/
 
-        setXIdx(model.getIdx().get());
         model.getIdx().addListener((observable, oldValue, newValue) -> {
 
             log.debug("stack IDX = {}", newValue);
@@ -65,65 +74,66 @@ public class CardStackView {
             //TO DO check all stacks for game finish
             while (change.next()) {
                 if (change.wasAdded()) {
-                    List<CardView> addedCardViews = dragContext.currentDraggedCardViews;
-                    if (addedCardViews == null) {
-                        addedCardViews = new ArrayList<>();
-                        List<? extends CardModel> addedSubList = change.getAddedSubList();
-                        for (CardModel cardModel : addedSubList) {
-                            cardModel.getHiddenValue().set(false);
-                            addedCardViews.add(new CardView(cardModel));
-                        }
-                        if (cardViewsOnNewCallback != null) {
-                            cardViewsOnNewCallback.accept(addedCardViews);
-                        }
-                    }
-                    log.debug("Added to stack N{}: {} ", model.getIdx().get(), addedCardViews.size());
-                    cardNodes.addAll(addedCardViews);
-
-                    setXIdx(model.getIdx().get());
-                    makeDraggable2(cardNodes);
+                    onAddCard(change);
                 } else if (change.wasRemoved()) {
-
-                    int removedSize = change.getRemovedSize();
-                    log.debug("deleted from N{}: {}", model.getIdx().get(), removedSize);
-                    for (int i = 0; i < (distributionStack ? removedSize / 10 : removedSize); i++) {
-                        cardNodes.remove(cardNodes.size() - 1);
-                    }
+                    onRemoveCard(change);
                 }
             }
         });
     }
 
+    protected void onAddCard(ListChangeListener.Change<? extends CardModel> change) {
+        List<CardView> addedCardViews = new ArrayList<>(dragContext.draggedCardViews.keySet());
+        if (addedCardViews.isEmpty()) {
+            List<? extends CardModel> addedSubList = change.getAddedSubList();
+            for (CardModel cardModel : addedSubList) {
+                cardModel.getHiddenValue().set(false);
+                addedCardViews.add(new CardView(cardModel));
+            }
+            if (onNewCardViewsCallback != null) {
+                onNewCardViewsCallback.accept(addedCardViews);
+            }
+        }
+        log.debug("Added to stack N{}: {}", model.getIdx().get(), addedCardViews.size());
+        cardNodes.addAll(addedCardViews);
+        setXIdx(model.getIdx().get());
+        makeDraggable2(cardNodes);
+    }
 
-    private Rectangle createStackBackground() {
+    protected void onRemoveCard(ListChangeListener.Change<? extends CardModel> change) {
+        int removedSize = change.getRemovedSize();
+        log.debug("deleted from N{}: {}", model.getIdx().get(), removedSize);
+        for (int i = 0; i < removedSize; i++) {
+            cardNodes.remove(cardNodes.size() - 1);
+        }
+        makeDraggable2(cardNodes);
+    }
+
+    protected Rectangle createStackBackground() {
         Rectangle rectangle = new Rectangle(STACK_WIDTH - 15, 300);
         rectangle.getStyleClass().add("stack");
         return rectangle;
     }
 
-    private List<CardView> createCardNodes(boolean distributionStack) {
+    protected List<CardView> createCardNodes() {
         List<CardView> cardsViews = new ArrayList<>();
-        if (distributionStack) {
-            for (int i = 0; i < model.getCards().size() / 10; i++) {
-                // any card - it always be hidden
-                CardView cardView = new CardView(new CardModel(CardModel.Rank.ACE, CardModel.Suit.CLUBS, true));
-                cardsViews.add(cardView);
-            }
-        } else {
-            for (CardModel card : model.getCards()) {
-                CardView cardView = new CardView(card);
-                cardsViews.add(cardView);
-            }
-        }
-        for (int i = 0; i < cardsViews.size(); i++) {
-            Node card = cardsViews.get(i);
-            card.setLayoutY(VERTICAL_SHIFT * (i + 1));
-            card.setLayoutX(CARD_LEFT_MARGIN);
-        }
 
+        for (CardModel card : model.getCards()) {
+            CardView cardView = new CardView(card);
+            cardsViews.add(cardView);
+        }
         return cardsViews;
     }
 
+    protected void setXIdx(int i) {
+        backGroundRect.setLayoutX(STACK_WIDTH * i);
+        backGroundRect.setLayoutY(STACK_TOP_MARGIN);
+        for (int j = 0; j < getCardNodes().size(); j++) {
+            CardView cardView = getCardNodes().get(j);
+            cardView.setLayoutX(CARD_LEFT_MARGIN + STACK_WIDTH * i);
+            cardView.setLayoutY(STACK_TOP_MARGIN + VERTICAL_SHIFT * (j + 1));
+        }
+    }
 
     public void setAllowDrop(boolean b) {
         if (!b) {
@@ -183,50 +193,28 @@ public class CardStackView {
             dragContext.mouseAnchorX = mouseEvent.getSceneX();
             dragContext.mouseAnchorY = mouseEvent.getSceneY();
 
-
-            dragContext.initialX = new ArrayList<>();
-            dragContext.initialY = new ArrayList<>();
-            List<CardView> draggedNodes = new ArrayList<>();
+            dragContext.draggedCardViews.clear();
             for (int i = idx; i < CardStackView.this.getCardNodes().size(); i++) {
                 CardView cardView = CardStackView.this.getCardNodes().get(i);
                 log.debug("Dragging card: {}", cardView.getCardModel());
-                draggedNodes.add(cardView);
                 cardView.toFront();
-
-                dragContext.initialX.add(
-                        cardView.getLayoutX());
-                dragContext.initialY.add(
-                        cardView.getLayoutY());
-
+                dragContext.draggedCardViews.put(cardView, ImmutablePair.of(cardView.getLayoutX(), cardView.getLayoutY()));
             }
-            dragContext.currentDraggedCardViews = draggedNodes;
-
         };
 
         deepestCard.setOnMousePressed(makeDraggable ? eventHandlerMousePress : null);
         deepestCard.setOnMouseDragged(makeDraggable ? this::handleMouseDrag : null);
     }
 
-    private void setXIdx(int i) {
-        backGroundRect.setLayoutX(STACK_WIDTH * i);
-        for (int j = 0; j < getCardNodes().size(); j++) {
-            CardView cardView = getCardNodes().get(j);
-            cardView.setLayoutX(CARD_LEFT_MARGIN + STACK_WIDTH * i);
-            cardView.setLayoutY(STACK_TOP_MARGIN + VERTICAL_SHIFT * (j + 1));
-        }
-    }
-
     private void handleMouseDrag(MouseEvent mouseEvent) {
-        for (int i = 0; i < dragContext.initialX.size(); i++) {
-            Node node = dragContext.currentDraggedCardViews.get(i);
+        for (Map.Entry<CardView, Pair<Double, Double>> draggedCardView : dragContext.draggedCardViews.entrySet()) {
+
+            CardView node = draggedCardView.getKey();
+            Pair<Double, Double> initialCoords = draggedCardView.getValue();
             node.setLayoutX(
-                    dragContext.initialX.get(i)
-                            + mouseEvent.getSceneX()
-                            - dragContext.mouseAnchorX);
+                    initialCoords.getLeft() + mouseEvent.getSceneX() - dragContext.mouseAnchorX);
             node.setLayoutY(
-                    dragContext.initialY.get(i)
-                            + mouseEvent.getSceneY()
-                            - dragContext.mouseAnchorY);
+                    initialCoords.getRight() + mouseEvent.getSceneY() - dragContext.mouseAnchorY);
         }
     }
 }

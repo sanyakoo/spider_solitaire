@@ -35,7 +35,7 @@ public class GameView {
     }
 
     private void init() {
-        distribStackView = new CardStackView(model.getDistributionStack(), dragContext, true, null);
+        distribStackView = new DistributionCardStackView(model.getDistributionStack(), dragContext, null);
         distributionPane.getChildren().addAll(distribStackView.getNodes());
 
 
@@ -55,18 +55,18 @@ public class GameView {
             for (CardStackView stackView : stackViews) {
                 stackView.setAllowDrop(false);
             }
-            if (stackIndexByCoord >= 0 && stackIndexByCoord < stackViews.size() && checkAbilityToDrop(stackIndexByCoord, dragContext.currentDraggedCardViews)) {
+            if (stackIndexByCoord >= 0 && stackIndexByCoord < stackViews.size() && checkAbilityToDrop(stackIndexByCoord, dragContext.getDraggedCardsList())) {
                 stackViews.get(stackIndexByCoord).setAllowDrop(true);
             }
         });
 
         stacksPane.setOnMouseReleased(event -> {
-            if (dragContext.currentDraggedCardViews == null || dragContext.currentDraggedCardViews.isEmpty()) return;
+            if (dragContext.draggedCardViews == null || dragContext.draggedCardViews.isEmpty()) return;
             int targetStackIdx = getStackIndexByCoord(event.getX());
 
 
-            log.debug("dragged ctx: {}", dragContext.currentDraggedCardViews.size());
-            Integer currentDraggedNodeStackIdx = nodesStackIdx.get(dragContext.currentDraggedCardViews.get(0));
+            log.debug("dragged ctx: {}", dragContext.draggedCardViews.size());
+            Integer currentDraggedNodeStackIdx = nodesStackIdx.get(dragContext.getDraggedCardsList().get(0));
 
 
             if (currentDraggedNodeStackIdx == targetStackIdx || targetStackIdx < 0 || targetStackIdx >= stackViews.size() || !stackViews.get(targetStackIdx).isAllowedDrop()) {
@@ -77,7 +77,7 @@ public class GameView {
                     cardStackView.setAllowDrop(false);
                 }
 
-                addCardToStack(currentDraggedNodeStackIdx, targetStackIdx, dragContext.currentDraggedCardViews);//dragContext.currentDraggedCardView
+                addCardToStack(currentDraggedNodeStackIdx, targetStackIdx, dragContext.getDraggedCardsList());
 
 
                 log.debug("STACKS: {} {} {} {} {} {} {} {} {} {}",
@@ -93,14 +93,14 @@ public class GameView {
                         model.getStacks().get(9).getCards().size()
                 );
             }
+            dragContext.draggedCardViews.clear();
         });
 
 
         for (int i = 0; i < model.getStacks().size(); i++) {
             CardStackModel cardStackModel = model.getStacks().get(i);
             int finalI1 = i;
-            CardStackView cardStackView = new CardStackView(cardStackModel, dragContext, false,
-                    (List<? extends Node> cardViews) -> {
+            CardStackView cardStackView = new CardStackView(cardStackModel, dragContext,(List<? extends Node> cardViews) -> {
                         stacksPane.getChildren().addAll(cardViews);
                         cardViews.forEach(o -> nodesStackIdx.put(o, finalI1));
                     });
@@ -111,25 +111,10 @@ public class GameView {
 
         }
 
-
-       /* for (int i = 0; i < stackViews.size(); i++) {
-            CardStackView cardStackView = stackViews.get(i);
-            int finalI = i;
-            cardStackView.getCardNodes().addListener((ListChangeListener<? super CardView>) change -> {
-                while (change.next()) {
-                    if (change.wasAdded()) {
-                        List<? extends CardView> addedSubList = change.getAddedSubList();
-                        stacksPane.getChildren().addAll(addedSubList);
-                        for (CardView cardView : addedSubList) {
-                            nodesStackIdx.put(cardView, finalI);
-                        }
-                    }
-                }
-            });
-        }*/
     }
 
     private boolean checkAbilityToDrop(int stackIndexByCoord, List<CardView> currentDraggedCardViews) {
+        if (currentDraggedCardViews.isEmpty()) return false;
         CardStackModel cardStack = model.getStacks().get(stackIndexByCoord);
         ObservableList<CardModel> cards = cardStack.getCards();
         if (cards.isEmpty()) return true;
@@ -154,10 +139,6 @@ public class GameView {
     public void addCardToStack(int srcIdx, int targetIdx, List<CardView> currentDraggedCardViews) {//CardView cardNode
         CardStackModel srcStack = model.getStacks().get(srcIdx);
 
-//        if (srcIdx == targetIdx || targetIdx < 0 || targetIdx >= stackViews.size()) {
-//            srcStack.stayCardsInStack();
-//        } else
-        {
             log.debug("Moving from stack {} to stack {}", srcIdx, targetIdx);
 
             CardStackModel targetStack = model.getStacks().get(targetIdx);
@@ -177,9 +158,4 @@ public class GameView {
                 nodesStackIdx.put(currentDraggedCardView, targetIdx);
             }
         }
-
-        dragContext.currentDraggedCardViews = null;
     }
-
-
-}

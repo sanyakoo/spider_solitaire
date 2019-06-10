@@ -1,5 +1,4 @@
 package edu.spbstu.games.spider;
-
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
@@ -7,6 +6,7 @@ import javafx.collections.ObservableList;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
 import java.util.Collections;
 
 

@@ -3,7 +3,6 @@ package edu.spbstu.games.spider;
 import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import lombok.Data;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -33,9 +32,6 @@ public class Controller {
 
     @FXML
     public Pane resultBox;
-
-    @FXML
-    public VBox razdachaBox;
 
     @FXML
     public Pane distribPane;
