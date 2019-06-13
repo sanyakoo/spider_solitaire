@@ -4,7 +4,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.List;
 

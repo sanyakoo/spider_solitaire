@@ -17,7 +17,6 @@ public class CardModel {
     private Suit suit;
     private BooleanProperty hiddenValue = new SimpleBooleanProperty(true);
 
-
     public CardModel(Rank rank, Suit suit, boolean hiddenValue) {
         this.rank = rank;
         this.suit = suit;

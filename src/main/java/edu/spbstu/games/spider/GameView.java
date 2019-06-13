@@ -6,7 +6,6 @@ import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import lombok.extern.slf4j.Slf4j;
-
 import java.util.*;
 
 import static edu.spbstu.games.spider.CardStackView.*;

@@ -1,7 +1,6 @@
 package edu.spbstu.games.spider;
 
 import org.apache.commons.lang3.tuple.Pair;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;

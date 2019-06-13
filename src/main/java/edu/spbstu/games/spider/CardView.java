@@ -7,7 +7,6 @@ import lombok.Getter;
 
 public class CardView extends ImageView {
 
-
     @Getter
     private CardModel cardModel;
 
